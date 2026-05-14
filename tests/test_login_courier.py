@@ -11,10 +11,8 @@ from helpers import (
 class TestLoginCourier:
 
     @allure.title("Успешный логин курьера")
-    def test_login_courier_success(self):
-        login, password, first_name = register_new_courier_and_return_login_password()
-        assert login and password, "Курьер не создался"
-
+    def test_login_courier_success(self, created_courier):
+        login, password, first_name = created_courier
         payload = {
             "login": login,
             "password": password
@@ -22,8 +20,6 @@ class TestLoginCourier:
         response = requests.post(f"{URL}/api/v1/courier/login", json=payload)
         assert response.status_code == 200
         assert "id" in response.json(), "ID не возвращён"
-
-        delete_courier_by_login_password(login, password)
 
     @allure.title("Логин с неверным паролем")
     def test_login_courier_wrong_password(self):

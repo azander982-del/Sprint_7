@@ -19,23 +19,16 @@ class TestCreateCourier:
         delete_courier_by_login_password(login, password)
 
     @allure.title("Нельзя создать двух одинаковых курьеров")
-    def test_create_duplicate_courier_fails(self):
-        login = generate_random_string(10)
-        password = generate_random_string(10)
-        first_name = generate_random_string(10)
+    def test_create_duplicate_courier_fails(self, created_courier):
+        login, password, first_name = created_courier
         payload = {
             "login": login,
             "password": password,
             "firstName": first_name
         }
-        response_first = requests.post(f"{URL}/api/v1/courier", json=payload)
-        assert response_first.status_code == 201
-
-        response_second = requests.post(f"{URL}/api/v1/courier", json=payload)
-        assert response_second.status_code == 409
-        assert response_second.json()["message"] == "Этот логин уже используется. Попробуйте другой."
-
-        delete_courier_by_login_password(login, password)
+        response = requests.post(f"{URL}/api/v1/courier", json=payload)
+        assert response.status_code == 409
+        assert response.json()["message"] == "Этот логин уже используется. Попробуйте другой."
 
     @allure.title("Создание курьера без обязательного поля логин")
     def test_create_courier_missing_login(self):
@@ -67,18 +60,8 @@ class TestCreateCourier:
         assert response.status_code == 201
 
     @allure.title("Создание курьера с уже существующим логином возвращает ошибку")
-    def test_create_courier_existing_login_fails(self):
-        login = generate_random_string(10)
-        password = generate_random_string(10)
-        first_name = generate_random_string(10)
-        payload = {
-            "login": login,
-            "password": password,
-            "firstName": first_name
-        }
-        response_first = requests.post(f"{URL}/api/v1/courier", json=payload)
-        assert response_first.status_code == 201
-
+    def test_create_courier_existing_login_fails(self, created_courier):
+        login, password, first_name = created_courier
         payload2 = {
             "login": login,
             "password": generate_random_string(10),
@@ -87,5 +70,3 @@ class TestCreateCourier:
         response_second = requests.post(f"{URL}/api/v1/courier", json=payload2)
         assert response_second.status_code == 409
         assert response_second.json()["message"] == "Этот логин уже используется. Попробуйте другой."
-
-        delete_courier_by_login_password(login, password)
